@@ -67,10 +67,10 @@ class HTTPPost extends Binding
      */
     public function receive(): Message
     {
-        if (array_key_exists('SAMLRequest', $_POST)) {
-            $msgStr = $_POST['SAMLRequest'];
-        } elseif (array_key_exists('SAMLResponse', $_POST)) {
-            $msgStr = $_POST['SAMLResponse'];
+        if (array_key_exists('SAMLRequest', \Illuminate\Support\Facades\Request::post())) {
+            $msgStr = \Illuminate\Support\Facades\Request::post()['SAMLRequest'];
+        } elseif (array_key_exists('SAMLResponse', \Illuminate\Support\Facades\Request::post())) {
+            $msgStr = \Illuminate\Support\Facades\Request::post()['SAMLResponse'];
         } else {
             throw new \Exception('Missing SAMLRequest or SAMLResponse parameter.');
         }
@@ -100,8 +100,8 @@ class HTTPPost extends Binding
             Assert::notNull($msg->getDestination()); // Validation of the value must be done upstream
         }
 
-        if (array_key_exists('RelayState', $_POST)) {
-            $msg->setRelayState($_POST['RelayState']);
+        if (array_key_exists('RelayState', \Illuminate\Support\Facades\Request::post())) {
+            $msg->setRelayState(\Illuminate\Support\Facades\Request::post()['RelayState']);
         }
 
         return $msg;

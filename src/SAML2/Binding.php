@@ -66,26 +66,26 @@ abstract class Binding
      */
     public static function getCurrentBinding() : Binding
     {
-        switch ($_SERVER['REQUEST_METHOD']) {
+        switch (\Illuminate\Support\Facades\Request::method()) {
             case 'GET':
-                if (array_key_exists('SAMLRequest', $_GET) || array_key_exists('SAMLResponse', $_GET)) {
+                if (array_key_exists('SAMLRequest', \Illuminate\Support\Facades\Request::query()) || array_key_exists('SAMLResponse', \Illuminate\Support\Facades\Request::query())) {
                     return new HTTPRedirect();
-                } elseif (array_key_exists('SAMLart', $_GET)) {
+                } elseif (array_key_exists('SAMLart', \Illuminate\Support\Facades\Request::query())) {
                     return new HTTPArtifact();
                 }
                 break;
 
             case 'POST':
-                if (isset($_SERVER['CONTENT_TYPE'])) {
-                    $contentType = $_SERVER['CONTENT_TYPE'];
+                if (\Illuminate\Support\Facades\Request::header('Content-Type')) {
+                    $contentType = \Illuminate\Support\Facades\Request::header('Content-Type');
                     $contentType = explode(';', $contentType);
                     $contentType = $contentType[0]; /* Remove charset. */
                 } else {
                     $contentType = null;
                 }
-                if (array_key_exists('SAMLRequest', $_POST) || array_key_exists('SAMLResponse', $_POST)) {
+                if (array_key_exists('SAMLRequest', \Illuminate\Support\Facades\Request::post()) || array_key_exists('SAMLResponse', \Illuminate\Support\Facades\Request::post())) {
                     return new HTTPPost();
-                } elseif (array_key_exists('SAMLart', $_POST)) {
+                } elseif (array_key_exists('SAMLart', \Illuminate\Support\Facades\Request::post())) {
                     return new HTTPArtifact();
                 } elseif (
                     /**
@@ -94,7 +94,7 @@ abstract class Binding
                      */
                     ($contentType === 'text/xml' || $contentType === 'application/xml')
                     // See paragraph 3.2.3 of Binding for SAML2 (OASIS)
-                    || (isset($_SERVER['HTTP_SOAPACTION']) && $_SERVER['HTTP_SOAPACTION'] === 'http://www.oasis-open.org/committees/security'))
+                    || (\Illuminate\Support\Facades\Request::header('SOAPAction') === 'http://www.oasis-open.org/committees/security'))
                 {
                     return new SOAP();
                 }
@@ -103,15 +103,15 @@ abstract class Binding
 
         $logger = Utils::getContainer()->getLogger();
         $logger->warning('Unable to find the SAML 2 binding used for this request.');
-        $logger->warning('Request method: '.var_export($_SERVER['REQUEST_METHOD'], true));
-        if (!empty($_GET)) {
-            $logger->warning("GET parameters: '".implode("', '", array_map('addslashes', array_keys($_GET)))."'");
+        $logger->warning('Request method: '.\Illuminate\Support\Facades\Request::method());
+        if (!empty(\Illuminate\Support\Facades\Request::query())) {
+            $logger->warning("GET parameters: '".implode("', '", array_map('addslashes', array_keys(\Illuminate\Support\Facades\Request::query())))."'");
         }
-        if (!empty($_POST)) {
-            $logger->warning("POST parameters: '".implode("', '", array_map('addslashes', array_keys($_POST)))."'");
+        if (!empty(\Illuminate\Support\Facades\Request::post())) {
+            $logger->warning("POST parameters: '".implode("', '", array_map('addslashes', array_keys(\Illuminate\Support\Facades\Request::post())))."'");
         }
-        if (isset($_SERVER['CONTENT_TYPE'])) {
-            $logger->warning('Content-Type: '.var_export($_SERVER['CONTENT_TYPE'], true));
+        if (\Illuminate\Support\Facades\Request::header('Content-Type')) {
+            $logger->warning('Content-Type: '.var_export(\Illuminate\Support\Facades\Request::header('Content-Type'), true));
         }
 
         throw new UnsupportedBindingException('Unable to find the SAML 2 binding used for this request.');

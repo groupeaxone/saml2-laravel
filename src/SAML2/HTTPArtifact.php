@@ -99,8 +99,8 @@ class HTTPArtifact extends Binding
      */
     public function receive(): Message
     {
-        if (array_key_exists('SAMLart', $_REQUEST)) {
-            $artifact = base64_decode($_REQUEST['SAMLart']);
+        if (\Illuminate\Support\Facades\Request::has('SAMLart')) {
+            $artifact = base64_decode(\Illuminate\Support\Facades\Request::input('SAMLart'));
             $endpointIndex = bin2hex(substr($artifact, 2, 2));
             $sourceId = bin2hex(substr($artifact, 4, 20));
         } else {
@@ -138,7 +138,7 @@ class HTTPArtifact extends Binding
         $issuer->setValue($this->spMetadata->getString('entityid'));
 
         $ar->setIssuer($issuer);
-        $ar->setArtifact($_REQUEST['SAMLart']);
+        $ar->setArtifact(\Illuminate\Support\Facades\Request::input('SAMLart'));
         $ar->setDestination($endpoint['Location']);
 
         // sign the request
@@ -165,8 +165,8 @@ class HTTPArtifact extends Binding
         $samlResponse = Message::fromXML($xml);
         $samlResponse->addValidator([get_class($this), 'validateSignature'], $artifactResponse);
 
-        if (isset($_REQUEST['RelayState'])) {
-            $samlResponse->setRelayState($_REQUEST['RelayState']);
+        if (\Illuminate\Support\Facades\Request::has('RelayState')) {
+            $samlResponse->setRelayState(\Illuminate\Support\Facades\Request::input('RelayState'));
         }
 
         return $samlResponse;

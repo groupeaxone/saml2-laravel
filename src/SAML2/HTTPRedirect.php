@@ -186,7 +186,7 @@ class HTTPRedirect extends Binding
         $relayState = '';
         $sigAlg = '';
         $sigQuery = '';
-        foreach (explode('&', $_SERVER['QUERY_STRING']) as $e) {
+        foreach (explode('&', \Illuminate\Support\Facades\Request::getQueryString()) as $e) {
             $tmp = explode('=', $e, 2);
             $name = $tmp[0];
             if (count($tmp) === 2) {
